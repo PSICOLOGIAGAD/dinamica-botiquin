@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botiquín Emocional Visual ACT & DBT</title>
+    <style>
+        :root {
+            --primary: #5a67d8;
+            --act-color: #4299e1;
+            --dbt-color: #48bb78;
+            --bg: #f0f4f8;
+            --text: #2d3748;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 { margin-bottom: 10px; color: var(--primary); }
+        .subtitulo { margin-top: 0; margin-bottom: 30px; color: #718096; }
+
+        /* Gráfico de Cajas Principal */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 25px; 
+            width: 90%; 
+            max-width: 1100px; 
+        }
+
+        .caja { 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden; /* Para que la imagen cubra las esquinas */
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .caja:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            border-color: var(--primary); 
+        }
+
+        /* Espacio para la Imagen Principal de la Caja */
+        .caja-imagen-principal {
+            width: 100%;
+            height: 150px;
+            background-color: #e2e8f0; /* Color de carga */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem; /* Tamaño del emoji provisional */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .caja h3 { 
+            margin: 0; 
+            padding: 15px; 
+            background: white; 
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        /* Modal / Ventana Emergente (Caja Abierta) */
+        .overlay { 
+            position: fixed; 
+            top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.7); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active { display: flex; opacity: 1; }
+
+        .contenido-caja { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 25px; 
+            width: 90%;
+            max-width: 600px; 
+            position: relative; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .overlay.active .contenido-caja { transform: scale(1); }
+
+        .btn-cerrar { 
+            position: absolute; 
+            top: 15px; 
+            right: 20px; 
+            cursor: pointer; 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #a0aec0;
+            transition: color 0.2s;
+        }
+        .btn-cerrar:hover { color: #2d3748; }
+
+        #modal-titulo { text-align: center; margin-top: 0; color: var(--primary); }
+
+        /* Estilos para las Técnicas dentro del Modal */
+        .contenedor-tecnicas {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tecnica-bloque {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .tecnica-bloque.act { background: #ebf4ff; border-left: 5px solid var(--act-color); }
+        .tecnica-bloque.dbt { background: #f0fff4; border-left: 5px solid var(--dbt-color); }
+
+        /* Imagen/Icono de la Técnica */
+        .tecnica-imagen {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem; /* Tamaño del emoji provisional */
+            flex-shrink: 0; /* No se encoge */
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .tecnica-texto { flex-grow: 1; }
+        .tecnica-tipo { font-weight: bold; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 2px; display: block; }
+        .tecnica-tipo.act { color: var(--act-color); }
+        .tecnica-tipo.dbt { color: var(--dbt-color); }
+        .tecnica-desc { font-size: 0.95rem; line-height: 1.4; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Botiquín Emocional</h1>
+    <p class="subtitulo">Toca una caja para abrir herramientas psicológicas visuales</p>
+
+    <div class="grid" id="grid">
+        </div>
+
+    <div class="overlay" id="overlay" onclick="cerrarFuera(event)">
+        <div class="contenido-caja">
+            <span class="btn-cerrar" onclick="cerrar()">×</span>
+            <h2 id="modal-titulo">Estado Emocional</h2>
+            
+            <div class="contenedor-tecnicas">
+                <div class="tecnica-bloque act">
+                    <div class="tecnica-imagen" id="img-act">🧩</div> <div class="tecnica-texto">
+                        <span class="tecnica-tipo act">Técnica ACT (Aceptación)</span>
+                        <span class="tecnica-desc" id="txt-act">Descripción de la técnica...</span>
+                    </div>
+                </div>
+
+                <div class="tecnica-bloque dbt">
+                    <div class="tecnica-imagen" id="img-dbt">🛡️</div> <div class="tecnica-texto">
+                        <span class="tecnica-tipo dbt">Herramienta DBT (Regulación)</span>
+                        <span class="tecnica-desc" id="txt-dbt">Descripción de la técnica...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS DE LA ACTIVIDAD (ESTADOS Y TÉCNICAS)
+        // Para usar imágenes reales, cambia el valor de 'imgPrincipal', 'imgAct' e 'imgDbt'
+        // de un emoji 🧠 a una ruta 'img/tu-imagen.png'.
+        const datos = [
+            { 
+                estado: "Cansado Mentalmente", 
+                imgPrincipal: "🤯", // <--- CAMBIA POR RUTA DE IMAGEN
+                act: "Defusión: Mira tus pensamientos como nubes que pasan.", 
+                imgAct: "☁️",     // <--- CAMBIA POR RUTA DE IMAGEN
+                dbt: "TIP: Lávate la cara con agua muy fría (cambio temperatura).",
+                imgDbt: "❄️"      // <--- CAMBIA POR RUTA DE IMAGEN
+            },
+            { 
+                estado: "Estresado", 
+                imgPrincipal: "😬", 
+                act: "Acción Comprometida: Haz una tarea de 1 min que sea valiosa.", 
+                imgAct: "✅", 
+                dbt: "Relajación Muscular Progresiva: Tensa y suelta.", 
+                imgDbt: "🧘" 
+            },
+            { 
+                estado: "Ansioso", 
+                imgPrincipal: "😟", 
+                act: "Expansión: Haz espacio físico a la sensación sin juzgarla.", 
+                imgAct: "👐", 
+                dbt: "Respiración Cuadrada: Inhala(4), Retén(4), Exhala(4), Espera(4).", 
+                imgDbt: "🫁" 
+            },
+            { 
+                estado: "Agotado / Fatiga", 
+                imgPrincipal: "🔋", 
+                act: "Contacto Presente: Nota 5 sonidos ahora mismo.", 
+                imgAct: "👂", 
+                dbt: "Autocuidado Sensorial: Busca un aroma o textura reconfortante.", 
+                imgDbt: "🧴" 
+            },
+            { 
+                estado: "Triste", 
+                imgPrincipal: "😢", 
+                act: "Valores: Haz un gesto pequeño por algo que ames.", 
+                imgAct: "❤️", 
+                dbt: "Actividad Opuesta: Si la tristeza te pide aislarte, muévete o saluda.", 
+                imgDbt: "🚶" 
+            },
+            { 
+                estado: "Vagancia / Procrastinación", 
+                imgPrincipal: "🦥", 
+                act: "Yo Observador: Nota que tú no eres tu pereza, eres quien la ve.", 
+                imgAct: "👁️", 
+                dbt: "Regla de 2 min: Empieza la tarea sin pensar en el final.", 
+                imgDbt: "⏱️" 
+            }
+        ];
+
+        const grid = document.getElementById('grid');
+        const overlay = document.getElementById('overlay');
+
+        // Función para verificar si una cadena es un emoji o una ruta de imagen
+        function esImagen(cadena) {
+            return cadena.includes('.') || cadena.includes('/');
+        }
+
+        // Generar la cuadrícula de cajas
+        datos.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'caja';
+            
+            // Configurar la imagen principal de la caja
+            let estandarteHtml = esImagen(item.imgPrincipal) 
+                ? `<div class="caja-imagen-principal" style="background-image: url('${item.imgPrincipal}'); font-size: 0;"></div>`
+                : `<div class="caja-imagen-principal">${item.imgPrincipal}</div>`;
+
+            div.innerHTML = `
+                ${estandarteHtml}
+                <h3>${item.estado}</h3>
+            `;
+            div.onclick = () => abrir(item);
+            grid.appendChild(div);
+        });
+
+        // Abrir el Modal con la información y sus imágenes
+        function abrir(item) {
+            document.getElementById('modal-titulo').innerText = item.estado;
+            
+            // Configurar textos
+            document.getElementById('txt-act').innerText = item.act;
+            document.getElementById('txt-dbt').innerText = item.dbt;
+
+            // Configurar imágenes dentro del modal
+            const imgActCont = document.getElementById('img-act');
+            const imgDbtCont = document.getElementById('img-dbt');
+
+            if(esImagen(item.imgAct)) {
+                imgActCont.style.backgroundImage = `url('${item.imgAct}')`;
+                imgActCont.innerText = ''; // Quitar emoji
+            } else {
+                imgActCont.style.backgroundImage = 'none';
+                imgActCont.innerText = item.imgAct;
+            }
+
+            if(esImagen(item.imgDbt)) {
+                imgDbtCont.style.backgroundImage = `url('${item.imgDbt}')`;
+                imgDbtCont.innerText = ''; // Quitar emoji
+            } else {
+                imgDbtCont.style.backgroundImage = 'none';
+                imgDbtCont.innerText = item.imgDbt;
+            }
+
+            overlay.classList.add('active');
+        }
+
+        // Cerrar el Modal
+        function cerrar() { 
+            overlay.classList.remove('active'); 
+        }
+
+        // Cerrar al hacer clic fuera del contenido blanco
+        function cerrarFuera(event) {
+            if (event.target === overlay) {
+                cerrar();
+            }
+        }
+    </script>
+</body>
+</html>
